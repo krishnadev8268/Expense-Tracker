@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import connectToDatabase from '@/lib/mongodb';
 import Transaction, { ITransaction } from '@/models/Transaction';
 import Settings from '@/models/Settings';
