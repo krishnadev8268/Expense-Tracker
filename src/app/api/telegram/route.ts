@@ -68,7 +68,7 @@ async function transcribeAudio(audioBuffer: ArrayBuffer): Promise<string> {
 
 // Helper to extract JSON data using Gemini
 async function extractDataWithGemini(text: string, imageBuffer?: ArrayBuffer): Promise<any> {
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
   const prompt = `Extract the expense information from the following input and return ONLY a valid JSON object with this exact structure, with no markdown formatting or extra text: { "amount": Number, "category": String, "date": "YYYY-MM-DD", "description": String, "splitWith": String | null }. If the user mentions splitting the bill with someone (e.g. "split with Rahul"), set splitWith to that person's name, otherwise null. If the date is not clear, use today's date: ${new Date().toISOString().split('T')[0]}. Text: "${text}"`;
 
   const contents: any[] = [prompt];
