@@ -185,8 +185,8 @@ export async function POST(req: Request) {
     const successMsg = `✅ Expense Added!${splitMsg}\n\nAmount: ₹${newTransaction.amount}\nCategory: ${newTransaction.category}\nDate: ${newTransaction.date}\nDescription: ${newTransaction.description}`;
     await sendTelegramMessage(chatId, successMsg);
 
-    // Fire and forget sheet sync
-    appendRowToSheet({
+    // Sync to Google Sheets
+    await appendRowToSheet({
       amount: newTransaction.amount,
       category: newTransaction.category,
       date: newTransaction.date,

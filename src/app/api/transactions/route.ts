@@ -18,8 +18,8 @@ export async function POST(request: Request) {
       userId: 'web-manual'
     });
 
-    // Fire and forget sheet sync (don't block the API response)
-    appendRowToSheet({
+    // Await sheet sync (serverless requires awaiting background tasks)
+    await appendRowToSheet({
       amount: body.amount,
       category: body.category,
       date: body.date,
