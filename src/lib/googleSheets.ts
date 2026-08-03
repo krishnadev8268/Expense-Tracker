@@ -11,7 +11,16 @@ export async function appendRowToSheet(data: {
   try {
     const sheetId = process.env.GOOGLE_SHEET_ID;
     const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
-    const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+    let privateKey = process.env.GOOGLE_PRIVATE_KEY || '';
+    // Remove surrounding quotes if present (Vercel sometimes keeps them)
+    if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
+      privateKey = privateKey.slice(1, -1);
+    }
+    if (privateKey.startsWith("'") && privateKey.endsWith("'")) {
+      privateKey = privateKey.slice(1, -1);
+    }
+    // Replace escaped newlines with actual newlines
+    privateKey = privateKey.replace(/\\n/g, '\n');
 
     if (!sheetId || !clientEmail || !privateKey) {
       console.warn('Google Sheets API credentials missing. Skipping sheet sync.');
