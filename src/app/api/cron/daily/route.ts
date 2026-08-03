@@ -4,6 +4,8 @@ import Settings from '@/models/Settings';
 import Transaction from '@/models/Transaction';
 import { appendRowToSheet } from '@/lib/googleSheets';
 
+export const dynamic = 'force-dynamic';
+
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
 
 async function sendTelegramMessage(chatId: string, text: string) {
