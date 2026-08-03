@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import Transaction from '@/models/Transaction';
+import { appendRowToSheet } from '@/lib/googleSheets';
 
 export async function POST(request: Request) {
   try {
@@ -15,6 +16,15 @@ export async function POST(request: Request) {
       description: body.description,
       date: body.date,
       userId: 'web-manual'
+    });
+
+    // Fire and forget sheet sync (don't block the API response)
+    appendRowToSheet({
+      amount: body.amount,
+      category: body.category,
+      date: body.date,
+      description: body.description,
+      source: 'Web App'
     });
 
     return NextResponse.json({ ok: true, transaction: newTx });

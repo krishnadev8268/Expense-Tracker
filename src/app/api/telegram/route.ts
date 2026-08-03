@@ -4,6 +4,7 @@ import Transaction from '@/models/Transaction';
 import Settings from '@/models/Settings';
 import Loan from '@/models/Loan';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { appendRowToSheet } from '@/lib/googleSheets';
 
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
 const GROQ_API_KEY = process.env.GROQ_API_KEY!;
@@ -181,9 +182,17 @@ export async function POST(req: Request) {
       userId: userId,
     });
 
-    // Send success message
     const successMsg = `✅ Expense Added!${splitMsg}\n\nAmount: ₹${newTransaction.amount}\nCategory: ${newTransaction.category}\nDate: ${newTransaction.date}\nDescription: ${newTransaction.description}`;
     await sendTelegramMessage(chatId, successMsg);
+
+    // Fire and forget sheet sync
+    appendRowToSheet({
+      amount: newTransaction.amount,
+      category: newTransaction.category,
+      date: newTransaction.date,
+      description: newTransaction.description,
+      source: 'Telegram Bot'
+    });
 
     // Overspend Alert Logic
     try {

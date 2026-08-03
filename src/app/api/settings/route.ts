@@ -27,6 +27,7 @@ export async function POST(request: Request) {
         $set: {
           ...(body.monthlySalary !== undefined && { monthlySalary: body.monthlySalary }),
           ...(body.categoryBudgets !== undefined && { categoryBudgets: body.categoryBudgets }),
+          ...(body.recurringExpenses !== undefined && { recurringExpenses: body.recurringExpenses }),
           ...(body.assets !== undefined && { assets: body.assets })
         }
       },

@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 export default function SettingsPage() {
   const [salary, setSalary] = useState<number>(0);
   const [budgets, setBudgets] = useState<{ category: string; limit: number }[]>([]);
+  const [recurring, setRecurring] = useState<{ amount: number; category: string; description: string; dayOfMonth: number; lastProcessedMonth: string }[]>([]);
   const [assets, setAssets] = useState<{ name: string; value: number }[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -17,6 +18,7 @@ export default function SettingsPage() {
       .then(data => {
         setSalary(data.monthlySalary || 0);
         setBudgets(data.categoryBudgets || []);
+        setRecurring(data.recurringExpenses || []);
         setAssets(data.assets || []);
         setLoading(false);
       })
@@ -45,7 +47,7 @@ export default function SettingsPage() {
       const res = await fetch('/api/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ monthlySalary: salary, categoryBudgets: budgets, assets }),
+        body: JSON.stringify({ monthlySalary: salary, categoryBudgets: budgets, recurringExpenses: recurring, assets }),
       });
       if (res.ok) {
         alert('Settings saved successfully!');
@@ -130,6 +132,92 @@ export default function SettingsPage() {
               ))}
               {budgets.length === 0 && (
                 <p className="text-slate-500 text-sm">No category budgets set. Add some to start tracking overspending!</p>
+              )}
+            </div>
+          </section>
+
+          <hr className="border-slate-800" />
+
+          {/* Recurring Expenses Section */}
+          <section>
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-xl font-semibold text-orange-400">Fixed / Recurring Expenses</h2>
+                <p className="text-sm text-slate-400">Expenses that will be auto-added every month.</p>
+              </div>
+              <button
+                onClick={() => setRecurring([...recurring, { amount: 0, category: '', description: '', dayOfMonth: 1, lastProcessedMonth: '' }])}
+                className="flex items-center space-x-2 bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-xl transition-colors text-sm"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add Fixed Expense</span>
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              {recurring.map((r, i) => (
+                <div key={i} className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                  <input
+                    type="text"
+                    value={r.description}
+                    onChange={(e) => {
+                      const newR = [...recurring];
+                      newR[i].description = e.target.value;
+                      setRecurring(newR);
+                    }}
+                    className="bg-slate-800 text-white px-4 py-3 rounded-xl flex-1 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    placeholder="e.g. Rent, Netflix, SIP"
+                  />
+                  <input
+                    type="text"
+                    value={r.category}
+                    onChange={(e) => {
+                      const newR = [...recurring];
+                      newR[i].category = e.target.value;
+                      setRecurring(newR);
+                    }}
+                    className="bg-slate-800 text-white px-4 py-3 rounded-xl flex-1 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    placeholder="Category"
+                  />
+                  <div className="flex items-center space-x-2 flex-1">
+                    <span className="text-slate-400">₹</span>
+                    <input
+                      type="number"
+                      value={r.amount}
+                      onChange={(e) => {
+                        const newR = [...recurring];
+                        newR[i].amount = Number(e.target.value);
+                        setRecurring(newR);
+                      }}
+                      className="bg-slate-800 text-white px-4 py-3 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      placeholder="Amount"
+                    />
+                  </div>
+                  <div className="flex items-center space-x-2 w-32 shrink-0">
+                    <span className="text-slate-400 text-sm">Day:</span>
+                    <input
+                      type="number"
+                      min="1" max="31"
+                      value={r.dayOfMonth}
+                      onChange={(e) => {
+                        const newR = [...recurring];
+                        newR[i].dayOfMonth = Number(e.target.value);
+                        setRecurring(newR);
+                      }}
+                      className="bg-slate-800 text-white px-3 py-3 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-orange-500 text-center"
+                      placeholder="Date (1-31)"
+                    />
+                  </div>
+                  <button
+                    onClick={() => setRecurring(recurring.filter((_, idx) => idx !== i))}
+                    className="p-3 bg-slate-800 hover:bg-red-500/20 text-red-400 rounded-xl transition-colors shrink-0"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                </div>
+              ))}
+              {recurring.length === 0 && (
+                <p className="text-slate-500 text-sm">No recurring expenses set. Save time by automating your Rent, Gym, and EMI entries!</p>
               )}
             </div>
           </section>
