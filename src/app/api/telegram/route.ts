@@ -67,7 +67,7 @@ async function transcribeAudio(audioBuffer: ArrayBuffer): Promise<string> {
 
 // Helper to extract JSON data using Gemini
 async function extractDataWithGemini(text: string, imageBuffer?: ArrayBuffer): Promise<any> {
-  const model = genAI.getGenerativeModel({ model: 'gemini-3.5-flash' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
   const prompt = `Extract the expense information from the following input and return ONLY a valid JSON object with this exact structure, with no markdown formatting or extra text: { "amount": Number, "category": String, "date": "YYYY-MM-DD", "description": String, "splitWith": String | null }. If the user mentions splitting the bill with someone (e.g. "split with Rahul"), set splitWith to that person's name, otherwise null. If the date is not clear, use today's date: ${new Date().toISOString().split('T')[0]}. Text: "${text}"`;
 
   const contents: any[] = [prompt];
@@ -109,6 +109,7 @@ async function extractDataWithGemini(text: string, imageBuffer?: ArrayBuffer): P
 }
 
 export async function POST(req: Request) {
+  let chatId: number | null = null;
   try {
     const update = await req.json();
     
@@ -118,7 +119,7 @@ export async function POST(req: Request) {
     }
 
     const { message } = update;
-    const chatId = message.chat.id;
+    chatId = message.chat.id;
     const userId = message.from.id.toString();
 
     let extractedText = '';
@@ -235,8 +236,15 @@ export async function POST(req: Request) {
   } catch (error: any) {
     console.error('Webhook Error:', error);
     
-    // Attempt to notify user if we know the chat ID (would need to extract from req.json() earlier ideally, 
-    // but simplified here)
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    if (chatId) {
+      try {
+        await sendTelegramMessage(chatId, `❌ Sorry, an error occurred: ${error.message}`);
+      } catch (e) {
+        console.error('Failed to send error message to Telegram:', e);
+      }
+    }
+    
+    // Always return 200 to Telegram so it doesn't endlessly retry the webhook
+    return NextResponse.json({ error: error.message }, { status: 200 });
   }
 }
